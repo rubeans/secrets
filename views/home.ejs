@@ -1,0 +1,31 @@
+<%- include("parcials/header") -%>
+
+<body id="home-body">
+  <main>
+    <div class="container-fluid">
+      <div class="p-5 mb-4 bg-light rounded-3">
+        <div class="container-fluid py-5">
+          <i class="fa-solid fa-user-shield fa-5x"></i>
+          <h1 class="display-5 fw-bold">Welcome</h1>
+          <p>Keep your secrets just to you own.</p>
+        </div>
+      </div>
+      <div class="row align-items-md-stretch">
+        <div class="col-md-6">
+          <div class="h-100 p-5 text-white bg-dark rounded-3">
+            <h2>Click here to create an account</h2>
+            <a href="/sign-up"><button class="btn btn-outline-light" type="button">Sign Up</button></a>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="h-100 p-5 bg-light border rounded-3">
+            <h2>Already have an account?</h2>
+            <a href="/sign-in"><button class="btn btn-outline-secondary" type="button">Sign In</button></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+  <%- include("parcials/footer") -%>
