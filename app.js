@@ -1,30 +1,95 @@
 const express = require("express")
 const app = express()
 const mongoose = require("mongoose")
+const ejs = require("ejs")
 
 app.set("view engine", "ejs")
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(`${__dirname}/public`))
 
-app.get("/", (req, res) => {
-    res.render("home")
-})
+main().catch(e => { console.error(e) })
 
-app.get("/sign-up", (req, res) => {
-    res.render("signup")
-})
+async function main() {
 
-app.get("/sign-in", (req, res) => {
-    res.render("signin")
-})
+    //DATABASE CONNECTION
+    try {
+        mongoose.connect("mongodb://localhost:27017/userDB")
+    } catch (e) {
+        console.log(e)
+    }
+
+    //DATABASE SETUP
+    const userSchema = new mongoose.Schema({
+        email: String,
+        password: String
+    },
+        {
+            versionKey: false
+        })
+
+    const User = mongoose.model("User", userSchema)
+
+    //GET ROUTES
+    app.get("/", (req, res) => {
+        res.render("home")
+    })
+
+    app.get("/sign-up", (req, res) => {
+        res.render("signup")
+    })
+
+    app.get("/sign-in", (req, res) => {
+        res.render("signin")
+    })
 
 
+    //POST ROUTES
+    app.post("/sign-up", (req, res) => {
+        const newUser = new User({
+            email: req.body.signUpEmail,
+            password: req.body.signUpPassword
+        })
 
+        newUser.save(e => {
+            if (e) {
+                console.error(e)
+            } else {
+                res.render("secrets")
+            }
+        })
+    })
 
-let port = process.env.PORT
-if (port == null || port == "") {
-    port = 3000
+    app.post("/sign-in", (req, res)=>{
+        const signInEmail = req.body.signInEmail
+        const siginPassword = req.body.signInPassword
+
+        User.findOne({email: signInEmail}, (e, docs)=>{
+            if(e){
+                console.error(e)
+            } else{
+                if(docs){
+                    if(docs.password === siginPassword){
+                        console.log("User found.")
+                        res.render("secrets")
+                    }
+                } else{
+                    console.error("user not found.")
+                    res.send("User not found, Please sign up to access your account.")
+                }
+            }
+        })
+    })
+
+    // LOCALHOST CONNECTION
+    let port = process.env.PORT
+    if (port == null || port == "") {
+        port = 3000
+    }
+    try {
+        app.listen(port, () => {
+            console.log("Servidor Rodando...")
+        })
+    } catch (e) {
+        console.error(e)
+    }
 }
-app.listen(port, () => {
-    console.log("Servidor Rodando...")
-})
