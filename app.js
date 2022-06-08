@@ -1,7 +1,7 @@
 const express = require("express")
 const app = express()
 const mongoose = require("mongoose")
-const ejs = require("ejs")
+const encrypt = require("mongoose-encryption")
 
 app.set("view engine", "ejs")
 app.use(express.urlencoded({ extended: true }))
@@ -26,6 +26,10 @@ async function main() {
         {
             versionKey: false
         })
+
+    const secret = "Thisisourlittlesecret."
+    userSchema.plugin(encrypt, { secret: secret, encryptedFields: ["password"] })
+    //['password'], ['something here to add more things to be encrypted']
 
     const User = mongoose.model("User", userSchema)
 
@@ -59,22 +63,22 @@ async function main() {
         })
     })
 
-    app.post("/sign-in", (req, res)=>{
+    app.post("/sign-in", (req, res) => {
         const signInEmail = req.body.signInEmail
         const siginPassword = req.body.signInPassword
 
-        User.findOne({email: signInEmail}, (e, docs)=>{
-            if(e){
+        User.findOne({ email: signInEmail }, (e, docs) => {
+            if (e) {
                 console.error(e)
-            } else{
-                if(docs){
-                    if(docs.password === siginPassword){
+            } else {
+                if (docs) {
+                    if (docs.password === siginPassword) {
                         console.log("User found.")
                         res.render("secrets")
                     }
-                } else{
-                    console.error("user not found.")
-                    res.send("User not found, Please sign up to access your account.")
+                } else {
+                    console.error("User not found.")
+                    res.send('User not found, please <a href="/sign-up">sign up</a> to have access.')
                 }
             }
         })
