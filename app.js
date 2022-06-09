@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require("express")
 const app = express()
 const mongoose = require("mongoose")
-const encrypt = require("mongoose-encryption")
+const md5 = require("md5")
 
 app.set("view engine", "ejs")
 app.use(express.urlencoded({ extended: true }))
@@ -27,9 +27,6 @@ async function main() {
             versionKey: false
         })
 
-    userSchema.plugin(encrypt, { secret: process.env.SECRET, encryptedFields: ["password"] })
-    //['password'], ['something here to add more things to be encrypted']
-
     const User = mongoose.model("User", userSchema)
 
     //GET ROUTES
@@ -50,7 +47,7 @@ async function main() {
     app.post("/sign-up", (req, res) => {
         const newUser = new User({
             email: req.body.signUpEmail,
-            password: req.body.signUpPassword
+            password: md5(req.body.signUpPassword)
         })
 
         newUser.save(e => {
@@ -64,7 +61,7 @@ async function main() {
 
     app.post("/sign-in", (req, res) => {
         const signInEmail = req.body.signInEmail
-        const siginPassword = req.body.signInPassword
+        const siginPassword = md5(req.body.signInPassword)
 
         User.findOne({ email: signInEmail }, (e, docs) => {
             if (e) {
