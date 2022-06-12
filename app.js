@@ -2,7 +2,8 @@ require('dotenv').config()
 const express = require("express")
 const app = express()
 const mongoose = require("mongoose")
-const md5 = require("md5")
+const bcrypt = require("bcrypt")
+const saltRounds = 10
 
 app.set("view engine", "ejs")
 app.use(express.urlencoded({ extended: true }))
@@ -13,7 +14,7 @@ async function main() {
 
     //DATABASE CONNECTION
     try {
-        mongoose.connect("mongodb://localhost:27017/userDB")
+        await mongoose.connect("mongodb://localhost:27017/userDB")
     } catch (e) {
         console.log(e)
     }
@@ -45,36 +46,41 @@ async function main() {
 
     //POST ROUTES
     app.post("/sign-up", (req, res) => {
-        const newUser = new User({
-            email: req.body.signUpEmail,
-            password: md5(req.body.signUpPassword)
-        })
+        bcrypt.hash(req.body.signUpPassword, saltRounds, (err, hash) => {
+            const newUser = new User({
+                email: req.body.signUpEmail,
+                password: hash
+            })
 
-        newUser.save(e => {
-            if (e) {
-                console.error(e)
-            } else {
-                res.render("secrets")
-            }
+            newUser.save(e => {
+                if (e) {
+                    console.error(e)
+                } else {
+                    res.render("secrets")
+                }
+            })
         })
     })
 
     app.post("/sign-in", (req, res) => {
         const signInEmail = req.body.signInEmail
-        const siginPassword = md5(req.body.signInPassword)
+        const siginPassword = req.body.signInPassword
 
         User.findOne({ email: signInEmail }, (e, docs) => {
             if (e) {
                 console.error(e)
             } else {
                 if (docs) {
-                    if (docs.password === siginPassword) {
-                        console.log("User found.")
-                        res.render("secrets")
-                    }
-                } else {
-                    console.error("User not found.")
-                    res.send('User not found, please <a href="/sign-up">sign up</a> to have access.')
+                    bcrypt.compare(siginPassword, docs.password, (err, result) => {
+                        if (result == true) {
+                            console.log("User found.")
+                            res.render("secrets")
+                        }
+                        else {
+                            console.error("User not found.")
+                            res.send('User not found, please <a href="/sign-up">sign up</a> to have access.')
+                        }
+                    })
                 }
             }
         })
