@@ -2,8 +2,9 @@ require('dotenv').config()
 const express = require("express")
 const app = express()
 const mongoose = require("mongoose")
-const bcrypt = require("bcrypt")
-const saltRounds = 10
+const session = require("express-session")
+const passport = require("passport")
+const passportLocalMongoose = require("passport-local-mongoose")
 
 app.set("view engine", "ejs")
 app.use(express.urlencoded({ extended: true }))
@@ -46,44 +47,11 @@ async function main() {
 
     //POST ROUTES
     app.post("/sign-up", (req, res) => {
-        bcrypt.hash(req.body.signUpPassword, saltRounds, (err, hash) => {
-            const newUser = new User({
-                email: req.body.signUpEmail,
-                password: hash
-            })
-
-            newUser.save(e => {
-                if (e) {
-                    console.error(e)
-                } else {
-                    res.render("secrets")
-                }
-            })
-        })
+       
     })
 
     app.post("/sign-in", (req, res) => {
-        const signInEmail = req.body.signInEmail
-        const siginPassword = req.body.signInPassword
-
-        User.findOne({ email: signInEmail }, (e, docs) => {
-            if (e) {
-                console.error(e)
-            } else {
-                if (docs) {
-                    bcrypt.compare(siginPassword, docs.password, (err, result) => {
-                        if (result == true) {
-                            console.log("User found.")
-                            res.render("secrets")
-                        }
-                        else {
-                            console.error("User not found.")
-                            res.send('User not found, please <a href="/sign-up">sign up</a> to have access.')
-                        }
-                    })
-                }
-            }
-        })
+       
     })
 
     // LOCALHOST CONNECTION
